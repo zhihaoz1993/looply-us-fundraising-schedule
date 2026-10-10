@@ -232,6 +232,14 @@ function applyEdit(card,o){
     let vn=card.querySelector('[data-role=venue]');if(vn)vn.textContent=vt;
     let zn=card.querySelector('[data-role=zone]');if(zn)zn.textContent="· "+zoneOf(hood);
     let li=card.querySelector(".ti-loc");if(li)li.value=o.venue||"";}}
+function resortDay(sec){if(!sec)return;let evs=sec.querySelector(".evs");if(!evs)return;
+  let cards=Array.from(evs.children).filter(c=>c.classList&&c.classList.contains("ev"));
+  let div=evs.querySelector(".ev-divider");let k=c=>c.dataset.s||"99:99";
+  let go=cards.filter(c=>c.dataset.sel==="go").sort((a,b)=>k(a).localeCompare(k(b)));
+  let no=cards.filter(c=>c.dataset.sel!=="go").sort((a,b)=>k(a).localeCompare(k(b)));
+  go.forEach(c=>evs.appendChild(c));
+  if(go.length&&no.length){if(!div){div=document.createElement("div");div.className="ev-divider";div.textContent="No-go · not in your plan (tap ✓ Go to add)";}evs.appendChild(div);}else if(div){div.remove();}
+  no.forEach(c=>evs.appendChild(c));}
 function renderPanels(){DAYS.forEach(d=>{let sec=document.getElementById("d"+d.d);if(!sec)return;
   let rs=sec.querySelector(".route-slot");if(rs)rs.innerHTML=routeFor(d.d);
   let cs=sec.querySelector(".cal-slot");if(cs)cs.innerHTML=calFor(d.d);})}
@@ -283,7 +291,7 @@ function init(){
   document.addEventListener("click",ev=>{
     let sy=ev.target.closest("#syncbtn");if(sy){let cur=syncKey();let k=prompt(cur?"Sync key (clear the box and OK to turn sync OFF on this device):":"Enter your private sync key to sync selections/time-edits across devices:",cur);if(k===null)return;k=k.trim();if(k){localStorage.setItem(SK,k);setSyncStatus("…");syncPull();}else{localStorage.removeItem(SK);setSyncStatus("off");}return}
     let vb=ev.target.closest("#viewbar .vb:not(#syncbtn)");if(vb){setView(vb.dataset.view);return}
-    let sb=ev.target.closest(".selbtn");if(sb){let card=sb.closest(".ev"),id=card.dataset.id,v=sb.dataset.v;ST.sel[id]=v;persist();card.dataset.sel=v;markButtons(card,v);renderPanels();return}
+    let sb=ev.target.closest(".selbtn");if(sb){let card=sb.closest(".ev"),id=card.dataset.id,v=sb.dataset.v;ST.sel[id]=v;persist();card.dataset.sel=v;markButtons(card,v);resortDay(card.closest(".day"));renderPanels();return}
     let eb=ev.target.closest(".editbtn");if(eb){let w=eb.closest(".ev").querySelector('[data-role=editwrap]');w.hidden=!w.hidden;return}
     let rm=ev.target.closest(".rmbtn");if(rm){let id=rm.closest(".ev").dataset.id;if(confirm("Remove this added event?"))removeCustom(id);return}
     let adb=ev.target.closest("#addbtn");if(adb){let p=document.getElementById("addpanel");if(p)p.hidden=!p.hidden;return}
