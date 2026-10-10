@@ -129,6 +129,10 @@ body[data-view="cal"] .cal{display:block}
 .rmbtn{font-size:11px;font-weight:700;border:1px dashed var(--line2);background:transparent;color:var(--brand-ink);border-radius:14px;padding:2px 10px;cursor:pointer}
 .custom-slot{margin-top:4px}
 .custom-slot .ev-custom{border-left-color:var(--brand)}
+.day-past{opacity:.5}
+.day-past .d-date::after{content:" · passed";color:var(--faint);font-weight:600;font-size:11px;letter-spacing:0}
+.day-today{box-shadow:0 0 0 2px rgba(27,107,79,.35)}
+.day-today .d-date::after{content:" · today";color:var(--green-dk);font-weight:700;font-size:11px}
 .evs.folded .ev[data-sel="nogo"]{display:none}
 .ev-divider{cursor:pointer;user-select:none}
 .ev-divider:hover{color:var(--brand-ink)}
@@ -248,6 +252,15 @@ function resortDay(sec){if(!sec)return;let evs=sec.querySelector(".evs");if(!evs
   if(go.length&&no.length){if(!div){div=document.createElement("div");div.className="ev-divider";}evs.appendChild(div);}else if(div){div.remove();div=null;}
   no.forEach(c=>evs.appendChild(c));if(div)updateDivider(evs);}
 function setFoldAll(f){document.querySelectorAll(".evs").forEach(evs=>{evs.classList.toggle("folded",f);updateDivider(evs)});try{localStorage.setItem("looply_fold",f?"1":"0")}catch(e){}let b=document.getElementById("foldbtn");if(b)b.textContent=f?"⊞ Show No-go":"⊟ Fold No-go"}
+function ptKey(){try{let p=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));let m=p.getMonth()+1,d=p.getDate();return m<10?0:(m>10?9999:d)}catch(e){return 0}}
+function reorderDays(){let first=document.querySelector(".day");if(!first)return;let wrap=first.parentElement;let key=ptKey();
+  let days=Array.from(wrap.querySelectorAll(".day"));
+  days.forEach(s=>{let D=+s.id.slice(1);s.classList.toggle("day-past",D<key);s.classList.toggle("day-today",D===key)});
+  let fut=days.filter(s=>+s.id.slice(1)>=key).sort((a,b)=>(+a.id.slice(1))-(+b.id.slice(1)));
+  let past=days.filter(s=>+s.id.slice(1)<key).sort((a,b)=>(+a.id.slice(1))-(+b.id.slice(1)));
+  let ref=wrap.querySelector("h2");if(!ref)return;let footer=wrap.querySelector("footer");
+  fut.concat(past).forEach(s=>{ref.insertAdjacentElement("afterend",s);ref=s});
+  if(footer)wrap.appendChild(footer);}
 function renderPanels(){DAYS.forEach(d=>{let sec=document.getElementById("d"+d.d);if(!sec)return;
   let rs=sec.querySelector(".route-slot");if(rs)rs.innerHTML=routeFor(d.d);
   let cs=sec.querySelector(".cal-slot");if(cs)cs.innerHTML=calFor(d.d);})}
@@ -292,7 +305,7 @@ function init(){
     let rs=document.createElement("div");rs.className="route-slot";let cs=document.createElement("div");cs.className="cal-slot";let xs=document.createElement("div");xs.className="custom-slot";
     if(evs){evs.parentNode.insertBefore(rs,evs);evs.parentNode.insertBefore(xs,evs);evs.parentNode.insertBefore(cs,evs);}else{sec.appendChild(rs);sec.appendChild(xs);sec.appendChild(cs);}});
   Object.values(ST.custom||{}).forEach(e=>{EVBYID[e.id]=e});
-  applyAll();setView("list");setFoldAll(localStorage.getItem("looply_fold")==="1");setSyncStatus();if(syncKey())syncPull();
+  applyAll();setView("list");setFoldAll(localStorage.getItem("looply_fold")==="1");reorderDays();setSyncStatus();if(syncKey())syncPull();
   let ab=document.getElementById("addurlbtn");if(ab)ab.addEventListener("click",()=>addFromURL(document.getElementById("addurl").value));
   let af=document.getElementById("addics");if(af)af.addEventListener("change",e=>{if(e.target.files[0])addFromFile(e.target.files[0])});
   let au=document.getElementById("addurl");if(au)au.addEventListener("keydown",e=>{if(e.key==="Enter")addFromURL(au.value)});
