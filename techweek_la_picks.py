@@ -275,13 +275,15 @@ def render_html(events, now):
     for i,e in enumerate(events,1):
         tags="".join(f'<span class=t>{esc(TAGLABEL[t])}</span>' for t in
              ["pitch","capital","vc_fund","entai","devtools","aitalk","gtm","founders","hackdemo","featured"] if t in e["why"])
-        cards.append(f"""<article class="c reg-{e['reg']}" data-day="{e['start_day']}" data-score="{e['score']}">
+        venue=e['neighborhood'] or e['host'] or ''
+        cards.append(f"""<article class="c reg-{e['reg']}" data-day="{e['start_day']}" data-score="{e['score']}" data-eid="{esc(e['id'])}" data-name="{esc(e['name'])}" data-venue="{esc(venue)}" data-start="{e['start_min']}" data-url="{esc(e['url'])}">
 <div class=rank>{i}</div><div class=body>
 <a class=nm href="{esc(e['url'])}" target=_blank rel=noopener>{esc(e['name'])}</a>
 <div class=meta>{esc(dstr(e))} · {esc(e['neighborhood'] or '—')} · <b>{esc(REGTXT[e['reg']])}</b> · score {e['score']}</div>
 <div class=tags>{tags}</div>
 <div class=host>host: {esc(e['host'])}</div>
 <div class=desc>{esc((e['desc'] or '')[:220])}</div>
+<div class=act><button class=addbtn data-on="0">➕ Add to my plan</button></div>
 </div></article>""")
     daybtns="".join(f'<button class=db data-d="{int(d[-2:])}">Oct {int(d[-2:])}</button>' for d in DAYS)
     return f"""<!doctype html><html lang=en><meta charset=utf-8>
@@ -303,15 +305,59 @@ main{{max-width:900px;margin:0 auto;padding:12px 18px 60px}}
 .meta{{color:var(--ink2);font-size:12.5px;margin:3px 0}}
 .tags{{margin:4px 0}}.t{{display:inline-block;background:#f4e9e2;color:#8a3c24;border-radius:6px;padding:1px 7px;font-size:11.5px;margin:2px 4px 2px 0}}
 .host{{font-size:12px;color:var(--ink2)}}.desc{{font-size:12.5px;color:#5c5048;margin-top:4px}}
+.act{{margin-top:7px}}
+.addbtn{{border:1px solid var(--brand);background:var(--cream);color:var(--brand);border-radius:8px;padding:4px 10px;font-size:12.5px;cursor:pointer;font-weight:600}}
+.addbtn:hover{{background:#f4e9e2}}
+.c.inplan{{border-left-color:#1a7f4b}}
+.c.inplan .addbtn{{background:#1a7f4b;border-color:#1a7f4b;color:#fff}}
+.hdrow{{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}}
+.hdrow a{{color:var(--brand);font-size:13px;text-decoration:none;font-weight:600}}
+#syncbadge{{font-size:12px;color:var(--ink2);border:1px solid var(--line);border-radius:20px;padding:3px 10px;cursor:pointer}}
 </style>
 <header><h1>LA Tech Week — Looply picks</h1>
-<div class=sub>Generated {now.strftime('%a %b %-d, %-I:%M %p %Z')} · {len(events)} events ranked for fundraising + AI / dev-tools intel · official Tech&nbsp;Week MCP.<br>Event text is third-party, user-submitted content.</div></header>
+<div class=sub>Generated {now.strftime('%a %b %-d, %-I:%M %p %Z')} · {len(events)} events ranked for fundraising + AI / dev-tools intel · official Tech&nbsp;Week MCP.<br>Event text is third-party, user-submitted content.</div>
+<div class=hdrow><a href="index.html">← Back to my schedule</a><span id=syncbadge title="Open your schedule and set the sync link once; this page shares it">⇄ Sync</span><span class=sub id=addmsg></span></div>
+</header>
 <div class=bar><button class="allb on" data-d="all">All</button>{daybtns}</div>
 <main id=list>{''.join(cards)}</main>
 <script>
 var btns=[...document.querySelectorAll('.db,.allb')];
 btns.forEach(b=>b.onclick=()=>{{btns.forEach(x=>x.classList.remove('on'));b.classList.add('on');
 var d=b.dataset.d;document.querySelectorAll('.c').forEach(c=>{{c.style.display=(d==='all'||c.dataset.day===d)?'':'none'}})}});
+
+/* ---- shared plan state + cross-device sync (same origin as the schedule page) ---- */
+var LS="looply_sched_v1", SK="looply_sync_key", SYNC="https://looply-sched-backend.vercel.app/api/state";
+(function(){{try{{var m=(location.hash||"").match(/[#&](?:k|key)=([^&]+)/);if(m){{localStorage.setItem(SK,decodeURIComponent(m[1]).trim());history.replaceState(null,"",location.pathname+location.search);}}}}catch(e){{}}}})();
+function key(){{return localStorage.getItem(SK)||""}}
+function readST(){{try{{return JSON.parse(localStorage.getItem(LS)||"{{}}")}}catch(e){{return {{}}}}}}
+function writeST(s){{try{{localStorage.setItem(LS,JSON.stringify(s))}}catch(e){{}}}}
+function pushST(s){{if(!key())return Promise.resolve(null);return fetch(SYNC,{{method:"POST",headers:{{"content-type":"application/json","x-sync-key":key()}},body:JSON.stringify(s)}}).then(r=>r.ok).catch(()=>false)}}
+function pullST(){{if(!key())return Promise.resolve(null);return fetch(SYNC,{{headers:{{"x-sync-key":key()}}}}).then(r=>r.ok?r.json():null).catch(()=>null)}}
+function cid(c){{return "tw-"+c.dataset.eid}}
+function inPlan(c){{var s=readST();var id=cid(c);return (s.custom&&s.custom[id])||(s.sel&&s.sel[id]==="go")}}
+function mark(c,on){{c.classList.toggle("inplan",on);var b=c.querySelector(".addbtn");if(b){{b.textContent=on?"✓ In your plan — remove":"➕ Add to my plan";b.dataset.on=on?"1":"0"}}}}
+function badge(t){{var b=document.getElementById("syncbadge");if(b)b.textContent=key()?(t||"⇄ Sync on"):"⇄ Sync off — set it on your schedule"}}
+function msg(t){{var m=document.getElementById("addmsg");if(m)m.textContent=t||""}}
+function applyChange(fn){{
+  var go=function(st){{fn(st);st._updated=Date.now();writeST(st);return st}};
+  if(key()){{return pullST().then(function(rem){{var st=readST();if(rem&&(rem._updated||0)>(st._updated||0)){{st=rem;writeST(st)}}st=go(st);return pushST(st)}})}}
+  return Promise.resolve(go(readST())).then(function(){{return null}});
+}}
+function addToPlan(c){{
+  var id=cid(c),s=parseInt(c.dataset.start,10);if(isNaN(s))s=null;
+  mark(c,true);msg("saving…");
+  applyChange(function(st){{st.custom=st.custom||{{}};st.sel=st.sel||{{}};
+    st.custom[id]={{id:id,day:parseInt(c.dataset.day,10),name:c.dataset.name,venue:c.dataset.venue||"",hood:"",s:s,e:null,sel:"go",url:c.dataset.url||""}};
+    st.sel[id]="go";}}).then(function(ok){{msg(ok===false?"saved on this device (sync failed)":(ok===null?"saved on this device":"✓ added & synced — see it on your schedule"))}});
+}}
+function removeFromPlan(c){{
+  var id=cid(c);mark(c,false);msg("removing…");
+  applyChange(function(st){{if(st.custom)delete st.custom[id];if(st.sel)delete st.sel[id]}}).then(function(ok){{msg(ok===false?"removed here (sync failed)":"removed")}});
+}}
+document.addEventListener("click",function(e){{var b=e.target.closest(".addbtn");if(!b)return;var c=b.closest(".c");if(b.dataset.on==="1")removeFromPlan(c);else addToPlan(c)}});
+(function init(){{ if(key()){{ pullST().then(function(rem){{ if(rem&&(rem._updated||0)>(readST()._updated||0))writeST(rem); document.querySelectorAll(".c").forEach(function(c){{if(inPlan(c))mark(c,true)}}); }}); }}
+  else {{ document.querySelectorAll(".c").forEach(function(c){{if(inPlan(c))mark(c,true)}}); }}
+  badge(); }})();
 </script></html>"""
 
 if __name__=="__main__":
