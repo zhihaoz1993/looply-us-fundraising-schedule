@@ -198,13 +198,13 @@ function syncPush(){if(!syncKey())return;clearTimeout(_pt);_pt=setTimeout(()=>{S
 async function syncPull(){if(!syncKey())return;setSyncStatus("…");try{let r=await fetch(SYNC_URL,{headers:{"x-sync-key":syncKey()}});if(r.status===401){setSyncStatus("bad key");return}let j=await r.json();if(j&&(j.sel||j.times||j.venues||j.custom||j.notes)){if((j._updated||0)>=(ST._updated||0)){ST.sel=j.sel||{};ST.times=j.times||{};ST.venues=j.venues||{};ST.custom=j.custom||{};ST.notes=j.notes||{};ST._updated=j._updated||0;Object.values(ST.custom).forEach(e=>{EVBYID[e.id]=e});try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}applyAll()}else{syncPush()}}setSyncStatus("on")}catch(e){setSyncStatus("offline")}}
 function persist(){try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}syncPush()}
 function applyAll(){renderCustom();document.querySelectorAll(".ev[data-id]").forEach(card=>{let id=card.dataset.id,ev=EVBYID[id];let sel=normSel(ST.sel[id]||(ev?ev.sel:"nogo"));card.dataset.sel=sel;markButtons(card,sel);let t=ST.times[id];let s=(t&&t.s!=null)?t.s:(ev?ev.s:null),e=(t&&t.e!=null)?t.e:(ev?ev.e:null);let venue=(ST.venues[id]!=null)?ST.venues[id]:(ev?ev.venue:"");applyEdit(card,{s:s,e:e,venue:venue});ensureNotes(card,id)});DAYS.forEach(d=>{let sec=document.getElementById("d"+d.d);if(sec)resortDay(sec)});renderPanels()}
-function ensureNotes(card,id){let ctl=card.querySelector(".ev-ctl");if(!ctl)return;let btn=card.querySelector(".notesbtn");
+function ensureNotes(card,id){let ctl=card.querySelector(".ev-ctl");if(!ctl)return;let note=ST.notes[id]||"";let has=!!note.trim();let btn=card.querySelector(".notesbtn");
   if(!btn){btn=document.createElement("button");btn.className="notesbtn";btn.type="button";ctl.appendChild(btn);
-    let wrap=document.createElement("div");wrap.className="ev-notes";wrap.setAttribute("data-role","noteswrap");wrap.hidden=true;
+    let wrap=document.createElement("div");wrap.className="ev-notes";wrap.setAttribute("data-role","noteswrap");wrap.hidden=!has;   // notes with content start expanded
     let ta=document.createElement("textarea");ta.className="ti-note";ta.rows=3;ta.placeholder="Private notes — attendees to meet, agenda, talking points…";
     wrap.appendChild(ta);ctl.parentNode.insertBefore(wrap,ctl.nextSibling);}
-  let note=ST.notes[id]||"";let ta=card.querySelector(".ti-note");if(ta&&document.activeElement!==ta&&ta.value!==note)ta.value=note;
-  let has=!!note.trim();btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has);}
+  let ta=card.querySelector(".ti-note");if(ta&&document.activeElement!==ta&&ta.value!==note)ta.value=note;
+  btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has);}
 function esc(s){return (s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
 function fmt(m){if(m==null)return"—";let h=Math.floor(m/60),mi=m%60,ap=h>=12?"PM":"AM",hh=(h%12)||12;return hh+":"+String(mi).padStart(2,"0")+" "+ap}
 function toMin(v){if(!v)return null;let p=v.split(":");return (+p[0])*60+(+p[1])}
