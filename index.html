@@ -95,7 +95,7 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:v
 .notesbtn.has{border-color:var(--brand);color:var(--brand);font-weight:600}
 .ev-notes{margin-top:9px}
 .ev-notes[hidden]{display:none}
-.ti-note{width:100%;box-sizing:border-box;font:inherit;font-size:12.5px;line-height:1.45;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;resize:vertical;min-height:54px;background:#fffdfb;color:var(--ink,#2b2320)}
+.ti-note{width:100%;box-sizing:border-box;font:inherit;font-size:12.5px;line-height:1.45;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;resize:none;overflow:hidden;min-height:40px;background:#fffdfb;color:var(--ink,#2b2320)}
 .ti-note:focus{outline:none;border-color:var(--brand)}
 .ev-hood{color:var(--faint)}
 /* selection states on cards */
@@ -207,7 +207,9 @@ function ensureNotes(card,id){let ctl=card.querySelector(".ev-ctl");if(!ctl)retu
     let ta=document.createElement("textarea");ta.className="ti-note";ta.rows=3;ta.placeholder="Private notes — attendees to meet, agenda, talking points…";
     wrap.appendChild(ta);ctl.parentNode.insertBefore(wrap,ctl.nextSibling);}
   let ta=card.querySelector(".ti-note");if(ta&&document.activeElement!==ta&&ta.value!==note)ta.value=note;
+  let wrap=card.querySelector("[data-role=noteswrap]");if(ta&&wrap&&!wrap.hidden)autoGrow(ta);
   btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has);}
+function autoGrow(ta){if(!ta)return;ta.style.height="auto";ta.style.height=(ta.scrollHeight+2)+"px";}
 function esc(s){return (s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
 function fmt(m){if(m==null)return"—";let h=Math.floor(m/60),mi=m%60,ap=h>=12?"PM":"AM",hh=(h%12)||12;return hh+":"+String(mi).padStart(2,"0")+" "+ap}
 function toMin(v){if(!v)return null;let p=v.split(":");return (+p[0])*60+(+p[1])}
@@ -337,7 +339,7 @@ function init(){
     let vb=ev.target.closest("#viewbar .vb[data-view]");if(vb){setView(vb.dataset.view);return}
     let sb=ev.target.closest(".selbtn");if(sb){let card=sb.closest(".ev"),id=card.dataset.id,v=sb.dataset.v;ST.sel[id]=v;persist();card.dataset.sel=v;markButtons(card,v);resortDay(card.closest(".day"));renderPanels();return}
     let eb=ev.target.closest(".editbtn");if(eb){let w=eb.closest(".ev").querySelector('[data-role=editwrap]');w.hidden=!w.hidden;return}
-    let nb=ev.target.closest(".notesbtn");if(nb){let w=nb.closest(".ev").querySelector('[data-role=noteswrap]');if(w){w.hidden=!w.hidden;if(!w.hidden){let ta=w.querySelector(".ti-note");if(ta)ta.focus()}}return}
+    let nb=ev.target.closest(".notesbtn");if(nb){let w=nb.closest(".ev").querySelector('[data-role=noteswrap]');if(w){w.hidden=!w.hidden;if(!w.hidden){let ta=w.querySelector(".ti-note");if(ta){autoGrow(ta);ta.focus()}}}return}
     let rm=ev.target.closest(".rmbtn");if(rm){let id=rm.closest(".ev").dataset.id;if(confirm("Remove this added event?"))removeCustom(id);return}
     let adb=ev.target.closest("#addbtn");if(adb){let p=document.getElementById("addpanel");if(p)p.hidden=!p.hidden;return}
     let fb=ev.target.closest("#foldbtn");if(fb){setFoldAll(localStorage.getItem("looply_fold")!=="1");return}
@@ -345,7 +347,7 @@ function init(){
     let sv=ev.target.closest(".ti-save");if(sv){let card=sv.closest(".ev"),id=card.dataset.id,evd=EVBYID[id];let sm=toMin(card.querySelector(".ti-s").value),em=toMin(card.querySelector(".ti-e").value);let loc=card.querySelector(".ti-loc").value.trim();ST.times[id]={s:sm,e:em};if(loc)ST.venues[id]=loc;else delete ST.venues[id];persist();let efv=(ST.venues[id]!=null)?ST.venues[id]:(evd?evd.venue:"");applyEdit(card,{s:sm,e:em,venue:efv});card.querySelector('[data-role=editwrap]').hidden=true;renderPanels();return}
   });
   let _nt=null;
-  document.addEventListener("input",ev=>{let ta=ev.target.closest(".ti-note");if(!ta)return;let card=ta.closest(".ev");if(!card)return;let id=card.dataset.id,v=ta.value;clearTimeout(_nt);_nt=setTimeout(()=>{if(v.trim())ST.notes[id]=v;else delete ST.notes[id];persist();let btn=card.querySelector(".notesbtn");if(btn){let has=!!v.trim();btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has)}},500)});
+  document.addEventListener("input",ev=>{let ta=ev.target.closest(".ti-note");if(!ta)return;let card=ta.closest(".ev");if(!card)return;let id=card.dataset.id,v=ta.value;autoGrow(ta);clearTimeout(_nt);_nt=setTimeout(()=>{if(v.trim())ST.notes[id]=v;else delete ST.notes[id];persist();let btn=card.querySelector(".notesbtn");if(btn){let has=!!v.trim();btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has)}},500)});
 }
 if(document.readyState!=="loading")init();else document.addEventListener("DOMContentLoaded",init);
 })();
