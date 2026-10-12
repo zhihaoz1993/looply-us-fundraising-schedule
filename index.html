@@ -265,11 +265,10 @@ function updateDivider(evs){let div=evs.querySelector(".ev-divider");if(!div)ret
 function resortDay(sec){if(!sec)return;let evs=sec.querySelector(".evs");if(!evs)return;
   let cards=Array.from(evs.children).filter(c=>c.classList&&c.classList.contains("ev"));
   let div=evs.querySelector(".ev-divider");let k=c=>c.dataset.s||"99:99";
-  let go=cards.filter(c=>c.dataset.sel==="go").sort((a,b)=>k(a).localeCompare(k(b)));
-  let maybe=cards.filter(c=>c.dataset.sel==="maybe").sort((a,b)=>k(a).localeCompare(k(b)));
+  let plan=cards.filter(c=>c.dataset.sel==="go"||c.dataset.sel==="maybe").sort((a,b)=>k(a).localeCompare(k(b)));
   let no=cards.filter(c=>c.dataset.sel==="nogo").sort((a,b)=>k(a).localeCompare(k(b)));
-  go.forEach(c=>evs.appendChild(c));maybe.forEach(c=>evs.appendChild(c));
-  if(no.length&&(go.length||maybe.length)){if(!div){div=document.createElement("div");div.className="ev-divider";}evs.appendChild(div);}else if(div){div.remove();div=null;}
+  plan.forEach(c=>evs.appendChild(c));
+  if(no.length&&plan.length){if(!div){div=document.createElement("div");div.className="ev-divider";}evs.appendChild(div);}else if(div){div.remove();div=null;}
   no.forEach(c=>evs.appendChild(c));if(div)updateDivider(evs);}
 function setFoldAll(f){document.querySelectorAll(".evs").forEach(evs=>{evs.classList.toggle("folded",f);updateDivider(evs)});try{localStorage.setItem("looply_fold",f?"1":"0")}catch(e){}let b=document.getElementById("foldbtn");if(b)b.textContent=f?"⊞ Show No-go":"⊟ Fold No-go"}
 function ptKey(){try{let p=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));let m=p.getMonth()+1,d=p.getDate();return m<10?0:(m>10?9999:d)}catch(e){return 0}}
