@@ -90,6 +90,12 @@ footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:v
 .ev-edit input{font:inherit;padding:3px 6px;border:1px solid var(--line2);border-radius:6px}
 .ev-edit .ti-loc{flex:1;min-width:160px}
 .ev-edit .ti-save{margin-left:6px;font-weight:700;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:12px;padding:2px 10px;cursor:pointer}
+.notesbtn{border:1px solid var(--line2);background:#fff;color:var(--muted);border-radius:12px;padding:2px 10px;cursor:pointer;font:inherit;font-size:12px}
+.notesbtn.has{border-color:var(--brand);color:var(--brand);font-weight:600}
+.ev-notes{margin-top:9px}
+.ev-notes[hidden]{display:none}
+.ti-note{width:100%;box-sizing:border-box;font:inherit;font-size:12.5px;line-height:1.45;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;resize:vertical;min-height:54px;background:#fffdfb;color:var(--ink,#2b2320)}
+.ti-note:focus{outline:none;border-color:var(--brand)}
 .ev-hood{color:var(--faint)}
 /* selection states on cards */
 .ev[data-sel="nogo"]{opacity:.5}
@@ -169,7 +175,7 @@ body[data-view="cal"] .cal{display:block}
 <b>Flights (all booked):</b> SF↔LA domestic legs now ticketed on United — UA 1260 SFO→LAX Oct 12 07:00–08:37 (seat 35A) · UA 1905 LAX→SFO Oct 19 09:25–10:58 (seat 34D).<br>
 <b>Oct 15 clash:</b> you're pitching live at Wedbush × A2H2 (Manhattan Beach, 6:15 PM) — the Google Sunset Dinner (Venice) and Pasadena Tech Happy Hour both run 6–9 PM the same evening; pick one.<br>
 <b>Removed as unattendable:</b> 50 events — pre-arrival (before SFO 10/9 22:40), post-departure (after 10/27 12:25), SF events during LA week (Oct 12–18), the Oct 19 travel-day LA event, plus host-rejected and canceled events.<br>
-<b>Notes:</b> 336 events shown, merged from Partiful + Luma (x2) + a Google RSVP invite; links verified valid, start–end times pulled per event (2026-10-11). RSVP status shown per card. Theme from Open Design · Looply Design System.
+<b>Notes:</b> 336 events shown, merged from Partiful + Luma (x2) + a Google RSVP invite; links verified valid, start–end times pulled per event (2026-10-12). RSVP status shown per card. Theme from Open Design · Looply Design System.
 </footer>
 </div><script>
 (function(){
@@ -177,7 +183,7 @@ const EV_ALL=[{"id": "0ifcbbx1", "day": 9, "s": 1380, "e": 120, "name": "OOO —
 const HOOD_LA=[["santa monica", "Santa Monica"], ["venice", "Venice"], ["culver", "Culver City"], ["playa", "Playa Vista"], ["marina del rey", "Marina del Rey"], ["manhattan beach", "Manhattan Beach"], ["el segundo", "El Segundo"], ["inglewood", "Inglewood"], ["la brea", "Inglewood"], ["long beach", "Long Beach"], ["biltmore", "DTLA"], ["s olive", "DTLA"], ["s hope", "DTLA"], ["downtown", "DTLA"], ["dtla", "DTLA"], ["chinatown", "Chinatown"], ["crenshaw", "South LA"], ["10th ave", "South LA"], ["beverly hills", "Beverly Hills"], ["la cienega", "West Hollywood"], ["west hollywood", "West Hollywood"], ["hollywood", "Hollywood"], ["ikea", "Burbank"], ["burbank", "Burbank"], ["westwood", "Westwood"], ["ucla", "Westwood"], ["century city", "Century City"], ["brentwood", "Brentwood"], ["pasadena", "Pasadena"], ["jefferson", "Culver City"], ["wilshire", "Beverly Hills"]], HOOD_SF=[["ocean beach", "Ocean Beach"], ["great hwy", "Ocean Beach"], ["montgomery", "FiDi"], ["sacramento", "FiDi"], ["gold st", "FiDi"], ["financial", "FiDi"], ["market st", "SoMa"], ["folsom", "SoMa"], ["11th st", "SoMa"], ["bryant", "SoMa"], ["8th st", "SoMa"], ["9th st", "SoMa"], ["townsend", "SoMa"], ["3rd st", "SoMa"], ["soma", "SoMa"], ["mission", "Mission"], ["valencia", "Mission"], ["union square", "Union Square"], ["powell", "Union Square"], ["van ness", "Nob Hill"], ["hyde", "Russian Hill"], ["bernal", "Bernal Heights"], ["palo alto", "Palo Alto"], ["university ave", "Palo Alto"], ["rohnert", "North Bay"], ["sonoma", "North Bay"], ["napa", "North Bay"], ["san jose", "South Bay"], ["santa clara", "South Bay"], ["san mateo", "San Mateo"]], ZONEMAP={"Santa Monica": "LA-West", "Venice": "LA-West", "Culver City": "LA-West", "Playa Vista": "LA-West", "Marina del Rey": "LA-West", "Westwood": "LA-West", "Brentwood": "LA-West", "Century City": "LA-West", "El Segundo": "LA-South", "Manhattan Beach": "LA-South", "Inglewood": "LA-South", "Long Beach": "LA-South", "Beverly Hills": "LA-Central", "West Hollywood": "LA-Central", "Hollywood": "LA-Central", "DTLA": "LA-Central", "Chinatown": "LA-Central", "South LA": "LA-Central", "Burbank": "LA-East", "Pasadena": "LA-East", "SoMa": "SF-Core", "FiDi": "SF-Core", "Mission": "SF-Core", "Union Square": "SF-Core", "Nob Hill": "SF-Core", "Russian Hill": "SF-Core", "Bernal Heights": "SF-Core", "Ocean Beach": "SF-West", "San Mateo": "Peninsula", "Palo Alto": "Peninsula", "South Bay": "South Bay", "North Bay": "North Bay", "Virtual": "Virtual", "LA": "LA", "SF": "SF", "—": "—"};
 function hoodOf(v,city){v=(v||"").toLowerCase();if(v.indexOf("virtual")>=0)return"Virtual";if(!v)return city==="LA"?"LA":(city==="SF"?"SF":"—");let o=(city!=="SF")?HOOD_LA.concat(HOOD_SF):HOOD_SF.concat(HOOD_LA);for(let i=0;i<o.length;i++){if(v.indexOf(o[i][0])>=0)return o[i][1]}return city==="LA"?"LA":(city==="SF"?"SF":"—")}
 function zoneOf(h){return ZONEMAP[h]||"—"}
-let ST; try{ST=JSON.parse(localStorage.getItem(LS))||{}}catch(e){ST={}} ST.sel=ST.sel||{}; ST.times=ST.times||{}; ST.venues=ST.venues||{}; ST.custom=ST.custom||{};
+let ST; try{ST=JSON.parse(localStorage.getItem(LS))||{}}catch(e){ST={}} ST.sel=ST.sel||{}; ST.times=ST.times||{}; ST.venues=ST.venues||{}; ST.custom=ST.custom||{}; ST.notes=ST.notes||{};
 function allEv(){return EV_ALL.concat(Object.values(ST.custom||{}))}
 function dayEvents(day){return allEv().filter(e=>e.day==day)}
 function isoPT(iso){if(!iso)return null;let d=new Date(iso);if(isNaN(d))return null;return new Date(d.getTime()-7*3600*1000)}
@@ -189,9 +195,16 @@ function syncKey(){return localStorage.getItem(SK)||""}
 function setSyncStatus(s){let b=document.getElementById("syncbtn");if(b)b.textContent="⇄ Sync: "+(syncKey()?(s||"on"):"off")}
 let _pt=null;
 function syncPush(){if(!syncKey())return;clearTimeout(_pt);_pt=setTimeout(()=>{ST._updated=Date.now();setSyncStatus("…");fetch(SYNC_URL,{method:"POST",headers:{"content-type":"application/json","x-sync-key":syncKey()},body:JSON.stringify(ST)}).then(r=>setSyncStatus(r.ok?"on":"error")).catch(()=>setSyncStatus("offline"))},700)}
-async function syncPull(){if(!syncKey())return;setSyncStatus("…");try{let r=await fetch(SYNC_URL,{headers:{"x-sync-key":syncKey()}});if(r.status===401){setSyncStatus("bad key");return}let j=await r.json();if(j&&(j.sel||j.times||j.venues||j.custom)){if((j._updated||0)>=(ST._updated||0)){ST.sel=j.sel||{};ST.times=j.times||{};ST.venues=j.venues||{};ST.custom=j.custom||{};ST._updated=j._updated||0;Object.values(ST.custom).forEach(e=>{EVBYID[e.id]=e});try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}applyAll()}else{syncPush()}}setSyncStatus("on")}catch(e){setSyncStatus("offline")}}
+async function syncPull(){if(!syncKey())return;setSyncStatus("…");try{let r=await fetch(SYNC_URL,{headers:{"x-sync-key":syncKey()}});if(r.status===401){setSyncStatus("bad key");return}let j=await r.json();if(j&&(j.sel||j.times||j.venues||j.custom||j.notes)){if((j._updated||0)>=(ST._updated||0)){ST.sel=j.sel||{};ST.times=j.times||{};ST.venues=j.venues||{};ST.custom=j.custom||{};ST.notes=j.notes||{};ST._updated=j._updated||0;Object.values(ST.custom).forEach(e=>{EVBYID[e.id]=e});try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}applyAll()}else{syncPush()}}setSyncStatus("on")}catch(e){setSyncStatus("offline")}}
 function persist(){try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}syncPush()}
-function applyAll(){renderCustom();document.querySelectorAll(".ev[data-id]").forEach(card=>{let id=card.dataset.id,ev=EVBYID[id];let sel=normSel(ST.sel[id]||(ev?ev.sel:"nogo"));card.dataset.sel=sel;markButtons(card,sel);let t=ST.times[id];let s=(t&&t.s!=null)?t.s:(ev?ev.s:null),e=(t&&t.e!=null)?t.e:(ev?ev.e:null);let venue=(ST.venues[id]!=null)?ST.venues[id]:(ev?ev.venue:"");applyEdit(card,{s:s,e:e,venue:venue})});DAYS.forEach(d=>{let sec=document.getElementById("d"+d.d);if(sec)resortDay(sec)});renderPanels()}
+function applyAll(){renderCustom();document.querySelectorAll(".ev[data-id]").forEach(card=>{let id=card.dataset.id,ev=EVBYID[id];let sel=normSel(ST.sel[id]||(ev?ev.sel:"nogo"));card.dataset.sel=sel;markButtons(card,sel);let t=ST.times[id];let s=(t&&t.s!=null)?t.s:(ev?ev.s:null),e=(t&&t.e!=null)?t.e:(ev?ev.e:null);let venue=(ST.venues[id]!=null)?ST.venues[id]:(ev?ev.venue:"");applyEdit(card,{s:s,e:e,venue:venue});ensureNotes(card,id)});DAYS.forEach(d=>{let sec=document.getElementById("d"+d.d);if(sec)resortDay(sec)});renderPanels()}
+function ensureNotes(card,id){let ctl=card.querySelector(".ev-ctl");if(!ctl)return;let btn=card.querySelector(".notesbtn");
+  if(!btn){btn=document.createElement("button");btn.className="notesbtn";btn.type="button";ctl.appendChild(btn);
+    let wrap=document.createElement("div");wrap.className="ev-notes";wrap.setAttribute("data-role","noteswrap");wrap.hidden=true;
+    let ta=document.createElement("textarea");ta.className="ti-note";ta.rows=3;ta.placeholder="Private notes — attendees to meet, agenda, talking points…";
+    wrap.appendChild(ta);ctl.parentNode.insertBefore(wrap,ctl.nextSibling);}
+  let note=ST.notes[id]||"";let ta=card.querySelector(".ti-note");if(ta&&document.activeElement!==ta&&ta.value!==note)ta.value=note;
+  let has=!!note.trim();btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has);}
 function esc(s){return (s||"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]))}
 function fmt(m){if(m==null)return"—";let h=Math.floor(m/60),mi=m%60,ap=h>=12?"PM":"AM",hh=(h%12)||12;return hh+":"+String(mi).padStart(2,"0")+" "+ap}
 function toMin(v){if(!v)return null;let p=v.split(":");return (+p[0])*60+(+p[1])}
@@ -320,12 +333,15 @@ function init(){
     let vb=ev.target.closest("#viewbar .vb[data-view]");if(vb){setView(vb.dataset.view);return}
     let sb=ev.target.closest(".selbtn");if(sb){let card=sb.closest(".ev"),id=card.dataset.id,v=sb.dataset.v;ST.sel[id]=v;persist();card.dataset.sel=v;markButtons(card,v);resortDay(card.closest(".day"));renderPanels();return}
     let eb=ev.target.closest(".editbtn");if(eb){let w=eb.closest(".ev").querySelector('[data-role=editwrap]');w.hidden=!w.hidden;return}
+    let nb=ev.target.closest(".notesbtn");if(nb){let w=nb.closest(".ev").querySelector('[data-role=noteswrap]');if(w){w.hidden=!w.hidden;if(!w.hidden){let ta=w.querySelector(".ti-note");if(ta)ta.focus()}}return}
     let rm=ev.target.closest(".rmbtn");if(rm){let id=rm.closest(".ev").dataset.id;if(confirm("Remove this added event?"))removeCustom(id);return}
     let adb=ev.target.closest("#addbtn");if(adb){let p=document.getElementById("addpanel");if(p)p.hidden=!p.hidden;return}
     let fb=ev.target.closest("#foldbtn");if(fb){setFoldAll(localStorage.getItem("looply_fold")!=="1");return}
     let fd=ev.target.closest(".ev-divider");if(fd){let evs=fd.closest(".evs");if(evs){evs.classList.toggle("folded");updateDivider(evs)}return}
     let sv=ev.target.closest(".ti-save");if(sv){let card=sv.closest(".ev"),id=card.dataset.id,evd=EVBYID[id];let sm=toMin(card.querySelector(".ti-s").value),em=toMin(card.querySelector(".ti-e").value);let loc=card.querySelector(".ti-loc").value.trim();ST.times[id]={s:sm,e:em};if(loc)ST.venues[id]=loc;else delete ST.venues[id];persist();let efv=(ST.venues[id]!=null)?ST.venues[id]:(evd?evd.venue:"");applyEdit(card,{s:sm,e:em,venue:efv});card.querySelector('[data-role=editwrap]').hidden=true;renderPanels();return}
   });
+  let _nt=null;
+  document.addEventListener("input",ev=>{let ta=ev.target.closest(".ti-note");if(!ta)return;let card=ta.closest(".ev");if(!card)return;let id=card.dataset.id,v=ta.value;clearTimeout(_nt);_nt=setTimeout(()=>{if(v.trim())ST.notes[id]=v;else delete ST.notes[id];persist();let btn=card.querySelector(".notesbtn");if(btn){let has=!!v.trim();btn.textContent=has?"📝 Notes •":"📝 Notes";btn.classList.toggle("has",has)}},500)});
 }
 if(document.readyState!=="loading")init();else document.addEventListener("DOMContentLoaded",init);
 })();
