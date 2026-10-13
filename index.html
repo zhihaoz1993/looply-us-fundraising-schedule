@@ -178,7 +178,7 @@ body[data-view="cal"] .cal{display:block}
 <b>Flights (all booked):</b> SF↔LA domestic legs now ticketed on United — UA 1260 SFO→LAX Oct 12 07:00–08:37 (seat 35A) · UA 1905 LAX→SFO Oct 19 09:25–10:58 (seat 34D).<br>
 <b>Oct 15 clash:</b> you're pitching live at Wedbush × A2H2 (Manhattan Beach, 6:15 PM) — the Google Sunset Dinner (Venice) and Pasadena Tech Happy Hour both run 6–9 PM the same evening; pick one.<br>
 <b>Removed as unattendable:</b> 50 events — pre-arrival (before SFO 10/9 22:40), post-departure (after 10/27 12:25), SF events during LA week (Oct 12–18), the Oct 19 travel-day LA event, plus host-rejected and canceled events.<br>
-<b>Notes:</b> 336 events shown, merged from Partiful + Luma (x2) + a Google RSVP invite; links verified valid, start–end times pulled per event (2026-10-12). RSVP status shown per card. Theme from Open Design · Looply Design System.
+<b>Notes:</b> 336 events shown, merged from Partiful + Luma (x2) + a Google RSVP invite; links verified valid, start–end times pulled per event (2026-10-13). RSVP status shown per card. Theme from Open Design · Looply Design System.
 </footer>
 </div><script>
 (function(){
@@ -236,8 +236,8 @@ function routeFor(day){
   h+='</ol></div>';return h;
 }
 function calFor(day){
-  let items=dayEvents(day).map(eff).filter(x=>x.s!=null&&(x.sel==="go"||x.sel==="maybe"));
-  if(!items.length)return '<div class="cal"><div class="cal-empty">Nothing marked ✓ Go or ◐ Maybe with a time this day — mark events in the List tab and they appear here.</div></div>';
+  let items=dayEvents(day).map(eff).filter(x=>x.s!=null&&x.sel==="go");
+  if(!items.length)return '<div class="cal"><div class="cal-empty">Nothing marked ✓ Go with a time this day — mark events Go in the List tab and they appear here.</div></div>';
   let minS=Math.min.apply(null,items.map(x=>x.s)),maxE=Math.max.apply(null,items.map(x=>x.e||x.s+60));
   let o=Math.floor(minS/60)*60,end=Math.ceil(maxE/60)*60,PX=0.95,H=(end-o)*PX;
   items.sort((a,b)=>a.s-b.s||((a.e||a.s+60)-(b.e||b.s+60)));
